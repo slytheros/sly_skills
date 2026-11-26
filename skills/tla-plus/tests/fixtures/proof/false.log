@@ -1,0 +1,57 @@
+
+\* TLAPM version v1.6.0-slytheros.2
+\* launched at 2026-11-26 20:41:45 with command line:
+\* tlapm --strict --nofp --toolbox 0 0 --threads 1 FalseGoal.tla
+
+@!!BEGIN
+@!!type:obligation
+@!!id:1
+@!!loc:4:1:4:3
+@!!status:to be proved
+@!!END
+
+@!!BEGIN
+@!!type:obligation
+@!!id:2
+@!!loc:4:4:4:20
+@!!status:to be proved
+@!!END
+
+@!!BEGIN
+@!!type:obligationsnumber
+@!!count:2
+@!!END
+
+@!!BEGIN
+@!!type:obligation
+@!!id:1
+@!!loc:4:1:4:3
+@!!status:failed
+@!!prover:isabelle
+@!!meth:auto; time-limit: 5; time-used: 0.1 (2%)
+@!!reason:false
+@!!already:false
+@!!obl:
+ASSUME TRUE
+PROVE  FALSE
+
+@!!END
+
+@!!BEGIN
+@!!type:obligation
+@!!id:2
+@!!loc:4:4:4:20
+@!!status:trivial
+@!!prover:tlapm
+@!!already:false
+@!!END
+
+(* created new ".tlacache/FalseGoal.tlaps/FalseGoal.thy" *)
+(* fingerprints written in ".tlacache/FalseGoal.tlaps/fingerprints" *)
+File "./FalseGoal.tla", line 4, characters 1-2:
+[ERROR]: Could not prove or check:
+           ASSUME IsaMT("auto", 5)
+           PROVE  FALSE
+File "./FalseGoal.tla", line 1, character 1 to line 5, character 77:
+[ERROR]: 1/2 obligations failed.
+There were backend errors processing module `"FalseGoal"`.

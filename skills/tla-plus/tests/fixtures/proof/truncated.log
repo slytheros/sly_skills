@@ -1,0 +1,37 @@
+
+\* TLAPM version v1.6.0-slytheros.2
+\* launched at 2026-11-26 20:43:02 with command line:
+\* tlapm --strict --nofp --toolbox 0 0 --threads 1 --wait 0 Timeout.tla
+
+(* will not use fingerprints (because of option `--nofp`), but will now load fingerprints from the file `.tlacache/Timeout.tlaps/fingerprints`, in order to overwrite with the new fingerprints, and then save the results at the end. *)
+@!!BEGIN
+@!!type:obligation
+@!!id:1
+@!!loc:4:1:4:3
+@!!status:to be proved
+@!!END
+
+@!!BEGIN
+@!!type:obligation
+@!!id:2
+@!!loc:4:4:4:43
+@!!status:to be proved
+@!!END
+
+@!!BEGIN
+@!!type:obligationsnumber
+@!!count:2
+@!!END
+
+@!!BEGIN
+@!!type:obligation
+@!!id:1
+@!!loc:4:1:4:3
+@!!status:being proved
+@!!prover:isabelle
+@!!meth:(rule impI, assumption); time-limit: 0.001
+@!!END
+
+@!!BEGIN
+@!!type:obligation
+@!!id:1

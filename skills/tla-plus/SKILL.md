@@ -68,6 +68,8 @@ Read only the references needed for the task:
   reductions, and run status.
 - [TLAPS](references/tlaps.md): invariants, processing phases, caches, backend diagnosis,
   refinement, trust, and completeness.
+- [Proof and witness diagnostics](references/diagnostics.md) provides commands to
+  summarize saved TLAPM attempts or evaluate model predicates on a saved TLC state.
 - [Examples and libraries](references/examples-and-modules.md): external models,
   operators, Java overrides, and library theorems.
 - [Large proofs](references/large-proof-projects.md) covers proof boundaries,
