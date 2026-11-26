@@ -1,12 +1,12 @@
 # Inspect saved proof logs and TLC witnesses
 
-Both scripts require Python 3.10 or later and use its standard library.
-Use their output to investigate a run under the consuming project's acceptance rules.
+Both scripts require Python 3.10 or later. They use the Python standard library.
+Use the reports to investigate a run under your project's acceptance rules.
 
 ## Summarize a TLAPM log
 
-Save the combined stdout and stderr from one TLAPM invocation targeting one
-module. Use Toolbox mode. Retain the original log, command, and exit status.
+Run TLAPM in Toolbox mode on one module. Save stdout and stderr in the same log.
+Keep the original log, command, and exit status.
 Set `TLA_SKILL_DIR` to the directory containing this skill's `SKILL.md`.
 
 ```sh
@@ -15,35 +15,33 @@ proof_status=$?
 python3 "$TLA_SKILL_DIR/scripts/summarize_tlaps.py" proof.log --source Model.tla
 ```
 
-Use the project's flags when capturing its run. For example, `--strict` is
-available in newer TLAPM builds. The summarizer reads saved data and emits JSON.
-It uses complete Toolbox frames, the obligation count, and the final TLAPM
-obligation summary. A later successful fallback removes the obligation from the
-unresolved list. Each remaining entry includes its last recorded attempt, even
-when the log ends before TLAPM reports the outcome. The elapsed time comes from
-`time-used` in the method field and is in seconds. Timing and other unavailable
-fields are `null`.
+Use the flags for your project. Newer TLAPM builds support `--strict`.
+The script produces a JSON report from the Toolbox frames, the obligation count,
+and the final TLAPM summary. If a later attempt proves an obligation, the script
+omits that obligation from the unresolved list. For each unresolved obligation,
+the report gives the last recorded attempt, even if the log ends early. The
+report gives elapsed time in seconds from `time-used` in the method field.
+The report uses `null` for unavailable fields.
 
-Supply `--source` with the exact source used by the run to include theorem names
-where they can be mapped. The script recognizes named theorem-family declarations
-in a single module with conventional top-level declarations. Toolbox coordinates
-and any file name recorded in the TLAPM summary remain available independently.
+To include theorem names, give `--source` the exact source file from the run.
+The script maps names from conventional top-level theorem declarations in a
+single module. The report gives any source coordinates from the Toolbox frames
+and any file name from the final TLAPM summary, even without `--source`.
 
 | Status | Evidence |
 | --- | --- |
-| `complete` | The final summary and Toolbox records agree that all selected obligations discharged. |
-| `proof_failure` | The final records show unresolved failures beyond an all-timeout result. Inspect each attempt's reason, including any timeouts in a mixed result. |
+| `complete` | The final summary and Toolbox records agree that TLAPM discharged all selected obligations. |
+| `proof_failure` | The final summary and Toolbox records agree. At least one final failure has a reason other than `timeout` or `internal timeout`, or has no recorded reason. |
 | `timeout` | Each final unresolved attempt reports `timeout` or `internal timeout`, or the runner supplies explicit timeout evidence. |
 | `memory_exhaustion` | The runner supplies explicit memory exhaustion evidence. |
 | `incomplete_log` | The recorded obligation count, final summary, or complete attempt records are missing or disagree. This also covers non-Toolbox logs. |
-| `incomplete_proof` | TLAPM emitted a strict-mode diagnostic for missing or omitted proof steps or an empty selected target, with no unresolved backend failure in the completed log. |
+| `incomplete_proof` | The log is complete and every backend obligation is resolved. TLAPM reported missing or omitted proof steps or an empty selected target in strict mode. |
 
-When the runner identifies how the process terminated, save its diagnosis in a
-JSON sidecar and pass `--runner-status runner.json`. Use `timeout` or
-`memory_exhaustion` for `termination` and preserve the runner's evidence.
-For example, a container runner may explicitly record `OOMKilled`.
-The sidecar governs the run status. A bare exit 137 or SIGKILL leaves the cause
-unknown.
+If the runner identifies why the process stopped, save its diagnosis in a JSON
+file. Set `termination` to `timeout` or `memory_exhaustion`. Copy the runner's
+evidence into `evidence`. Pass the file with `--runner-status runner.json`.
+If you supply a runner status file, the script uses its `termination` value
+as the run status. A bare exit 137 or SIGKILL leaves the cause unknown.
 
 ```json
 {"termination": "memory_exhaustion", "evidence": "Container terminated with reason OOMKilled"}
@@ -55,14 +53,13 @@ separately for the project's proof checks.
 
 ## Evaluate predicates on one TLC state
 
-Use a compatible Java and `tla2tools.jar` that can produce the saved witness.
-This script supports a TLC `-dumpTrace tla` module with a
-`CounterExample.state` set of pairs containing a one-based state number and
-a full state record. Save the raw state fields without `ALIAS` projections.
-The saved module must be loadable by TLC, with state values it can evaluate.
-Console traces, JSON dumps, and other TLA+ trace layouts produce a format error.
-If TLC put the dump path in the module header, the inspector normalizes that
-header in its temporary copy.
+Use a compatible Java runtime and a `tla2tools.jar` that supports
+`-dumpTrace tla`. Save the raw state fields without `ALIAS` projections.
+The script reads the pairs in `CounterExample.state`. Each pair has a
+one-based state number and a full state record. TLC must be able to load the
+module and evaluate its values. If TLC puts the dump path in the module header,
+the script corrects the header in its temporary copy. Console traces, JSON
+dumps, and other TLA+ trace layouts produce a format error.
 
 ```sh
 java -cp "$TLA_TOOLS_JAR" tlc2.TLC -config Model.cfg -dumpTrace tla Witness.tla Model
@@ -71,23 +68,22 @@ python3 "$TLA_SKILL_DIR/scripts/inspect_tlc_state.py" \
   Witness.tla Model.tla 3 BelowLimit CanIncrement
 ```
 
-Provide all model state variable names and the names of exported nullary Boolean
-predicates defined by the model. Use state-level enabledness predicates such as
-`CanIncrement == ENABLED Increment`. Supply the same constant settings as the
-original run in a cfg fragment containing only `CONSTANT` or `CONSTANTS`
-declarations. Omit the fragment for a model without constants. If the dump
-contains bare TLC model values, list those names with `--model-values a,b`
-so the probe binds them as model values. The model's
-directory is searched for imports. Repeat `--library DIR` for other module
-directories.
+List all model state variables with `--variables`. Give the names of exported
+nullary Boolean predicates. For enabledness, use a state-level predicate such as
+`CanIncrement == ENABLED Increment`.
 
-The script uses TLC to bind the selected state and evaluate the predicates in
-a temporary module and configuration. It prints the state number, its TLA+
-record, and the Boolean results. A false predicate is a result. A missing
-state, mismatched fields, invalid predicate, or TLC error exits with status 2.
-The probe evaluates the selected input state under the supplied model and
-constants. Reachability evidence comes from the saved witness and its original
-run.
+If the model has constants, copy the original run's `CONSTANT` or `CONSTANTS`
+declarations to a separate configuration file. Pass that file with
+`--constants`. If the dump contains bare TLC model values, list their names
+with `--model-values a,b`. The script searches the model's directory for imports.
+Repeat `--library DIR` for each additional module directory.
+
+The script creates a temporary TLC module and configuration. TLC evaluates the
+predicates on the selected state with the supplied model and constants. The
+script prints the state number, its TLA+ record, and each Boolean result.
+It reports `FALSE` as a result. It exits with status 2 if the state is missing,
+the fields do not match, a predicate is invalid, or TLC reports an error.
+Use the saved witness and its original run as reachability evidence.
 
 ## Run the regression checks
 

@@ -78,13 +78,13 @@ Read only the references needed for the task:
   code correspondence, interrupts, DMA, ownership, and memory ordering.
 
 For language semantics or version-sensitive behavior, check the official sources
-linked in each reference. Use the installed tool's help to check command options.
+in the relevant reference. Use the installed tool's help to check command options.
 
 ## Iterate and report evidence
 
-Translate changed PlusCal and inspect the generated TLA+. Parse changed
-specifications before checking properties. Use small TLC instances to find model
-errors and test candidate invariants. Use TLAPS when the claim needs deductive proof.
+Translate changed PlusCal. Inspect the generated TLA+. Parse changed
+specifications before you check properties. Use small TLC instances to find model
+errors and test candidate invariants. If the claim needs deductive proof, use TLAPS.
 Explain counterexamples in domain terms before changing the model or requirement.
 Do not weaken a property, suppress deadlock, or add fairness just to pass a check.
 
